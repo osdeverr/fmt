@@ -28,6 +28,8 @@ alternative to C stdio and C++ iostreams.
 If you like this project, please consider donating to one of the funds that
 help victims of the war in Ukraine: https://www.stopputin.net/.
 
+**FORK**: Moved the project to the Re build system. Rights to the code remain with its original authors.
+
 `Documentation <https://fmt.dev>`__
 
 `Cheat Sheets <https://hackingcpp.com/cpp/libs/fmt.html>`__
