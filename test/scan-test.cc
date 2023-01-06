@@ -65,7 +65,7 @@ TEST(scan_test, read_string_view) {
   EXPECT_EQ(s, "foo");
 }
 
-#ifdef FMT_HAVE_STRPTIME
+#ifndef _WIN32
 namespace fmt {
 template <> struct scanner<tm> {
   std::string format;

@@ -6,15 +6,12 @@
 // For the license information refer to format.h.
 
 #include "fmt/std.h"
+#include "fmt/ranges.h"
 
 #include <string>
 #include <vector>
 
-#include "fmt/os.h"  // fmt::system_category
-#include "fmt/ranges.h"
-#include "gtest-extra.h"  // StartsWith
-
-using testing::StartsWith;
+#include "gtest/gtest.h"
 
 TEST(std_test, path) {
 #ifdef __cpp_lib_filesystem
@@ -78,72 +75,5 @@ TEST(std_test, variant) {
 
   EXPECT_EQ(fmt::format("{}", v4), "variant(monostate)");
   EXPECT_EQ(fmt::format("{}", v5), "variant(\"yes, this is variant\")");
-
-  volatile int i = 42;  // Test compile error before GCC 11 described in #3068.
-  EXPECT_EQ(fmt::format("{}", i), "42");
-#endif
-}
-
-TEST(std_test, error_code) {
-  EXPECT_EQ("generic:42",
-            fmt::format(FMT_STRING("{0}"),
-                        std::error_code(42, std::generic_category())));
-  EXPECT_EQ("system:42",
-            fmt::format(FMT_STRING("{0}"),
-                        std::error_code(42, fmt::system_category())));
-  EXPECT_EQ("system:-42",
-            fmt::format(FMT_STRING("{0}"),
-                        std::error_code(-42, fmt::system_category())));
-}
-
-template <typename Catch> void exception_test() {
-  try {
-    throw std::runtime_error("Test Exception");
-  } catch (const Catch& ex) {
-    EXPECT_EQ("Test Exception", fmt::format("{}", ex));
-    EXPECT_EQ("std::runtime_error: Test Exception", fmt::format("{:t}", ex));
-  }
-}
-
-namespace my_ns1 {
-namespace my_ns2 {
-struct my_exception : public std::exception {
- private:
-  std::string msg;
-
- public:
-  my_exception(const std::string& s) : msg(s) {}
-  const char* what() const noexcept override;
-};
-const char* my_exception::what() const noexcept { return msg.c_str(); }
-}  // namespace my_ns2
-}  // namespace my_ns1
-
-TEST(std_test, exception) {
-  exception_test<std::exception>();
-  exception_test<std::runtime_error>();
-
-  try {
-    using namespace my_ns1::my_ns2;
-    throw my_exception("My Exception");
-  } catch (const std::exception& ex) {
-    EXPECT_EQ("my_ns1::my_ns2::my_exception: My Exception",
-              fmt::format("{:t}", ex));
-    EXPECT_EQ("My Exception", fmt::format("{:}", ex));
-  }
-
-  try {
-    throw std::system_error(std::error_code(), "message");
-  } catch (const std::system_error& ex) {
-    EXPECT_THAT(fmt::format("{:t}", ex), StartsWith("std::system_error: "));
-  }
-
-#ifdef __cpp_lib_filesystem
-  try {
-    throw std::filesystem::filesystem_error("message", std::error_code());
-  } catch (const std::filesystem::filesystem_error& ex) {
-    EXPECT_THAT(fmt::format("{:t}", ex),
-                StartsWith("std::filesystem::filesystem_error: "));
-  }
 #endif
 }

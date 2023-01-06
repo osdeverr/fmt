@@ -1,7 +1,5 @@
 add_subdirectory(gtest)
 
-include(CheckSymbolExists)
-
 set(TEST_MAIN_SRC test-main.cc gtest-extra.cc gtest-extra.h util.cc)
 add_library(test-main STATIC ${TEST_MAIN_SRC})
 target_include_directories(test-main PUBLIC
@@ -77,13 +75,7 @@ if (MSVC)
 endif()
 add_fmt_test(printf-test)
 add_fmt_test(ranges-test ranges-odr-test.cc)
-
 add_fmt_test(scan-test)
-check_symbol_exists(strptime "time.h" HAVE_STRPTIME)
-if (HAVE_STRPTIME)
-  target_compile_definitions(scan-test PRIVATE FMT_HAVE_STRPTIME)
-endif ()
-
 add_fmt_test(std-test)
 try_compile(compile_result_unused
             ${CMAKE_CURRENT_BINARY_DIR}
@@ -102,13 +94,13 @@ add_fmt_test(enforce-checks-test)
 target_compile_definitions(enforce-checks-test PRIVATE
                            -DFMT_ENFORCE_COMPILE_STRING)
 
-if (FMT_MODULE)
+if (FMT_CAN_MODULE)
   # The tests need {fmt} to be compiled as traditional library
   # because of visibility of implementation details.
   # If module support is present the module tests require a
   # test-only module to be built from {fmt}
   add_library(test-module OBJECT ${CMAKE_SOURCE_DIR}/src/fmt.cc)
-  target_compile_features(test-module PUBLIC cxx_std_11)
+  target_compile_features(test-module PUBLIC ${FMT_REQUIRED_FEATURES})
   target_include_directories(test-module PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
   enable_module(test-module)
